@@ -1,0 +1,286 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>PyMetaWear documentation &mdash; PyMetaWear 0.4.4 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="PyMetaWear 0.4.4 documentation" href="#"/>
+        <link rel="next" title="Discovering MetaWear boards addresses" href="discover.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="#" class="icon icon-home"> PyMetaWear
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.4.4
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="discover.html">Discovering MetaWear boards addresses</a></li>
+<li class="toctree-l1"><a class="reference internal" href="client.html">MetaWear Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backends/pygatt.html">Backend: <code class="docutils literal"><span class="pre">pygatt</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="backends/pybluez.html">Backend: <code class="docutils literal"><span class="pre">pybluez</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/index.html">MetaWear modules</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="#">PyMetaWear</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="#">Docs</a> &raquo;</li>
+      
+    <li>PyMetaWear documentation</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/index.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="pymetawear-documentation">
+<h1>PyMetaWear documentation<a class="headerlink" href="#pymetawear-documentation" title="Permalink to this headline">¶</a></h1>
+<a class="reference external image-reference" href="https://travis-ci.org/hbldh/pymetawear"><img alt="https://travis-ci.org/hbldh/pymetawear.svg?branch=master" src="https://travis-ci.org/hbldh/pymetawear.svg?branch=master" /></a>
+<a class="reference external image-reference" href="https://coveralls.io/github/hbldh/pymetawear?branch=master"><img alt="https://coveralls.io/repos/github/hbldh/pymetawear/badge.svg?branch=master" src="https://coveralls.io/repos/github/hbldh/pymetawear/badge.svg?branch=master" /></a>
+<p>Python package for connecting to and using <a class="reference external" href="https://mbientlab.com/">MbientLab&#8217;s MetaWear</a> boards.</p>
+<p>PyMetaWear is meant to be a thin wrapper around the
+<a class="reference external" href="https://github.com/mbientlab/Metawear-CppAPI">MetaWear C++ API</a>,
+providing a more Pythonic interface. It has support for using either
+<a class="reference external" href="https://github.com/karulis/pybluez">pybluez</a>/
+<a class="reference external" href="https://bitbucket.org/OscarAcena/pygattlib">gattlib</a> or
+<a class="reference external" href="https://github.com/peplin/pygatt">pygatt</a> for
+Bluetooth Low Energy communication.</p>
+<p>PyMetaWear can be run in Python 2.7 with both backends, but only with the <cite>pygatt</cite> backend in Python 3.</p>
+<blockquote>
+<div><ul class="simple">
+<li>PyMetaWear is currently a Linux only package!</li>
+<li>PyMetaWear is only tested with Ubuntu 14.04+ and Linux Mint 17 as of yet!</li>
+</ul>
+</div></blockquote>
+<div class="section" id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="discover.html">Discovering MetaWear boards addresses</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="discover.html#api">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="client.html">MetaWear Client</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="client.html#module-pymetawear.client">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backends/pygatt.html">Backend: <code class="docutils literal"><span class="pre">pygatt</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="backends/pygatt.html#pymetaweargatttoolbackend">PyMetaWearGATTToolBackend</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="backends/pybluez.html">Backend: <code class="docutils literal"><span class="pre">pybluez</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/index.html">MetaWear modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="modules/base.html">Module interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/accelerometer.html">Accelerometer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/gyroscope.html">Gyroscope module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/led.html">LED module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/settings.html">Settings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/haptic.html">Haptic module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/switch.html">Switch module</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>First, make sure all dependencies are installed:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo apt-get install build-essential libglib2.0-dev python-dev bluetooth libbluetooth-dev libboost-python-dev libboost-thread-dev
+</pre></div>
+</div>
+<p>PyMetaWear can be installed from pip:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ pip install git+git://github.com/hbldh/pymetawear.git
+</pre></div>
+</div>
+<div class="section" id="development">
+<h3>Development<a class="headerlink" href="#development" title="Permalink to this headline">¶</a></h3>
+<p>Clone this repository and run</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ python setup.py build
+</pre></div>
+</div>
+<p>to pull in the <a class="reference external" href="https://github.com/mbientlab/Metawear-CppAPI">MetaWear C++ API</a> submodule,
+build it and copy the Python wrappers from it to the PyMetaWear folder. This can also be achieved by
+running</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ pip install -e .
+</pre></div>
+</div>
+<p>in the cloned repository&#8217;s root folder.</p>
+</div>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="discover.html" class="btn btn-neutral float-right" title="Discovering MetaWear boards addresses" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Henrik Blidh.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.4.4',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

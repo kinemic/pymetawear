@@ -1,0 +1,267 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Discovering MetaWear boards addresses &mdash; PyMetaWear 0.4.4 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="PyMetaWear 0.4.4 documentation" href="index.html"/>
+        <link rel="next" title="MetaWear Client" href="client.html"/>
+        <link rel="prev" title="PyMetaWear documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> PyMetaWear
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.4.4
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Discovering MetaWear boards addresses</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#api">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="client.html">MetaWear Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backends/pygatt.html">Backend: <code class="docutils literal"><span class="pre">pygatt</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="backends/pybluez.html">Backend: <code class="docutils literal"><span class="pre">pybluez</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/index.html">MetaWear modules</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">PyMetaWear</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Discovering MetaWear boards addresses</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/discover.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="discovering-metawear-boards-addresses">
+<h1>Discovering MetaWear boards addresses<a class="headerlink" href="#discovering-metawear-boards-addresses" title="Permalink to this headline">¶</a></h1>
+<p>If you do not know the address of your MetaWear board, it
+can be found by performing a scan.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">pymetawear.client</span> <span class="kn">import</span> <span class="n">discover_devices</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">discover_devices</span><span class="p">()</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="p">[(</span><span class="s1">u&#39;DD:3A:7D:4D:56:F0&#39;</span><span class="p">,</span> <span class="s1">u&#39;MetaWear&#39;</span><span class="p">),</span>
+         <span class="p">(</span><span class="s1">u&#39;FF:50:35:82:3B:5A&#39;</span><span class="p">,</span> <span class="s1">u&#39;MetaWear&#39;</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p>The <code class="xref py py-func docutils literal"><span class="pre">discover_devices()</span></code> function uses the
+<code class="docutils literal"><span class="pre">hcitool</span></code> application, provided by the <a class="reference external" href="http://www.bluez.org/">BlueZ</a>
+bluetooth application.</p>
+<div class="section" id="api">
+<h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pymetawear.client.discover_devices">
+<code class="descclassname">pymetawear.client.</code><code class="descname">discover_devices</code><span class="sig-paren">(</span><em>timeout=5</em>, <em>only_metawear=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pymetawear/client.html#discover_devices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pymetawear.client.discover_devices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Discover Bluetooth Devices nearby.</p>
+<p>Using hcitool in subprocess, since DiscoveryService in pybluez/gattlib
+requires sudo, and hcitool can be allowed to do scan without elevated
+permission.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo apt-get install libcap2-bin
+</pre></div>
+</div>
+<p>installs linux capabilities manipulation tools.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo setcap <span class="s1">&#39;cap_net_raw,cap_net_admin+eip&#39;</span> <span class="sb">`</span>which hcitool<span class="sb">`</span>
+</pre></div>
+</div>
+<p>sets the missing capabilities on the executable quite like the setuid bit.</p>
+<p><strong>References:</strong></p>
+<ul class="simple">
+<li><a class="reference external" href="https://unix.stackexchange.com/questions/96106/bluetooth-le-scan-as-non-root">StackExchange, hcitool without sudo</a></li>
+<li><a class="reference external" href="https://stackoverflow.com/questions/26874829/hcitool-lescan-will-not-print-in-real-time-to-a-file">StackOverflow, hcitool lescan with timeout</a></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>timeout</strong> (<em>int</em>) &#8211; Duration of scanning.</li>
+<li><strong>only_metawear</strong> (<em>bool</em>) &#8211; If only addresses with the string &#8216;metawear&#8217;
+in its name should be returned.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">List of tuples with <cite>(address, name)</cite>.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="client.html" class="btn btn-neutral float-right" title="MetaWear Client" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="PyMetaWear documentation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Henrik Blidh.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.4.4',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

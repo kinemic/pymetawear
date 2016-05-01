@@ -1,0 +1,353 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pymetawear.backends.pybluez &mdash; PyMetaWear 0.4.4 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="PyMetaWear 0.4.4 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> PyMetaWear
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.4.4
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../discover.html">Discovering MetaWear boards addresses</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../client.html">MetaWear Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../exceptions.html">Exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../backends/pygatt.html">Backend: <code class="docutils literal"><span class="pre">pygatt</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../backends/pybluez.html">Backend: <code class="docutils literal"><span class="pre">pybluez</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/index.html">MetaWear modules</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">PyMetaWear</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      
+    <li>pymetawear.backends.pybluez</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pymetawear.backends.pybluez</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">.. moduleauthor:: hbldh &lt;henrik.blidh@nedomkull.com&gt;</span>
+<span class="sd">Created on 2016-04-02</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="c1">#from __future__ import unicode_literals</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">ctypes</span> <span class="kn">import</span> <span class="n">create_string_buffer</span>
+
+<span class="kn">from</span> <span class="nn">bluetooth.ble</span> <span class="kn">import</span> <span class="n">GATTRequester</span><span class="p">,</span> <span class="n">GATTResponse</span>
+
+<span class="kn">from</span> <span class="nn">pymetawear.exceptions</span> <span class="kn">import</span> <span class="n">PyMetaWearException</span><span class="p">,</span> <span class="n">PyMetaWearConnectionTimeout</span>
+<span class="kn">from</span> <span class="nn">pymetawear.utils</span> <span class="kn">import</span> <span class="n">range_</span><span class="p">,</span> <span class="n">string_types</span><span class="p">,</span> <span class="n">bytearray_to_str</span>
+<span class="kn">from</span> <span class="nn">pymetawear.backends</span> <span class="kn">import</span> <span class="n">BLECommunicationBackend</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PyBluezBackend&quot;</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">Requester</span><span class="p">(</span><span class="n">GATTRequester</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">notify_fcn</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Requester</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">notify_fcn</span> <span class="o">=</span> <span class="n">notify_fcn</span>
+
+    <span class="k">def</span> <span class="nf">on_notification</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">handle</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">notify_fcn</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="mi">3</span><span class="p">:])</span>
+
+
+<div class="viewcode-block" id="PyBluezBackend"><a class="viewcode-back" href="../../../backends/pybluez.html#pymetawear.backends.pybluez.PyBluezBackend">[docs]</a><span class="k">class</span> <span class="nc">PyBluezBackend</span><span class="p">(</span><span class="n">BLECommunicationBackend</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Backend using `pybluez &lt;https://github.com/karulis/pybluez&gt;`_ and</span>
+<span class="sd">    `gattlib &lt;https://bitbucket.org/OscarAcena/pygattlib&gt;`_ for BLE communication.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">async</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_primary_services</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_characteristics_cache</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_response</span> <span class="o">=</span> <span class="n">GATTResponse</span><span class="p">()</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">PyBluezBackend</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span>
+            <span class="n">address</span><span class="p">,</span> <span class="n">async</span><span class="p">,</span> <span class="mf">5.0</span> <span class="k">if</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">debug</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_build_handle_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_primary_services</span> <span class="o">=</span> <span class="p">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;uuid&#39;</span><span class="p">)):</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;start&#39;</span><span class="p">),</span> <span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;end&#39;</span><span class="p">))</span>
+                                  <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">requester</span><span class="o">.</span><span class="n">discover_primary</span><span class="p">()}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_characteristics_cache</span> <span class="o">=</span> <span class="p">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;uuid&#39;</span><span class="p">)):</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;value_handle&#39;</span><span class="p">),</span> <span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;value_handle&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                                       <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">requester</span><span class="o">.</span><span class="n">discover_characteristics</span><span class="p">()}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">requester</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Property handling `GattRequester` and its connection.</span>
+
+<span class="sd">        :return: The connected GattRequester instance.</span>
+<span class="sd">        :rtype: :class:`bluetooth.ble.GATTRequester`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_requester</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Creating new GATTRequester...&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_requester</span> <span class="o">=</span> <span class="n">Requester</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_notify_char_output</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_address</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_requester</span><span class="o">.</span><span class="n">is_connected</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Connecting GATTRequester...&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_requester</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">channel_type</span><span class="o">=</span><span class="s1">&#39;random&#39;</span><span class="p">)</span>
+            <span class="c1"># Using manual waiting since gattlib&#39;s `wait` keyword does not work.</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">t_step</span> <span class="o">=</span> <span class="mf">0.25</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_requester</span><span class="o">.</span><span class="n">is_connected</span><span class="p">()</span> <span class="ow">and</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span><span class="p">:</span>
+                <span class="n">t</span> <span class="o">+=</span> <span class="n">t_step</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">t_step</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_requester</span><span class="o">.</span><span class="n">is_connected</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="n">PyMetaWearConnectionTimeout</span><span class="p">(</span>
+                    <span class="s2">&quot;Could not establish a connection to {0}.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_address</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_requester</span>
+
+<div class="viewcode-block" id="PyBluezBackend.disconnect"><a class="viewcode-back" href="../../../backends/pybluez.html#pymetawear.backends.pybluez.PyBluezBackend.disconnect">[docs]</a>    <span class="k">def</span> <span class="nf">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Disconnect.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_requester</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_requester</span><span class="o">.</span><span class="n">is_connected</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_requester</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_requester</span> <span class="o">=</span> <span class="bp">None</span></div>
+
+    <span class="k">def</span> <span class="nf">_subscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">characteristic_uuid</span><span class="p">,</span> <span class="n">callback</span><span class="p">):</span>
+        <span class="c1"># Subscribe to Notify Characteristic.</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_handle</span><span class="p">(</span><span class="n">characteristic_uuid</span><span class="p">,</span> <span class="n">notify_handle</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">bytes_to_send</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">([</span><span class="mh">0x01</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">requester</span><span class="o">.</span><span class="n">write_by_handle_async</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">bytes_to_send</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_response</span><span class="p">)</span>
+
+    <span class="c1"># Read and Write methods</span>
+
+<div class="viewcode-block" id="PyBluezBackend.read_gatt_char_by_uuid"><a class="viewcode-back" href="../../../backends/pybluez.html#pymetawear.backends.pybluez.PyBluezBackend.read_gatt_char_by_uuid">[docs]</a>    <span class="k">def</span> <span class="nf">read_gatt_char_by_uuid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">characteristic_uuid</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read the desired data from the MetaWear board</span>
+<span class="sd">        using pybluez/gattlib backend.</span>
+
+<span class="sd">        :param uuid.UUID characteristic_uuid: Characteristic UUID to read from.</span>
+<span class="sd">        :return: The read data.</span>
+<span class="sd">        :rtype: str</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">requester</span><span class="o">.</span><span class="n">read_by_uuid</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">characteristic_uuid</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="PyBluezBackend.write_gatt_char_by_uuid"><a class="viewcode-back" href="../../../backends/pybluez.html#pymetawear.backends.pybluez.PyBluezBackend.write_gatt_char_by_uuid">[docs]</a>    <span class="k">def</span> <span class="nf">write_gatt_char_by_uuid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">characteristic_uuid</span><span class="p">,</span> <span class="n">data_to_send</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write the desired data to the MetaWear board</span>
+<span class="sd">        using pybluez/gattlib backend.</span>
+
+<span class="sd">        :param uuid.UUID characteristic_uuid: Characteristic UUID to write to.</span>
+<span class="sd">        :param str data_to_send: Data to send.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_handle</span><span class="p">(</span><span class="n">characteristic_uuid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_to_send</span><span class="p">,</span> <span class="n">string_types</span><span class="p">):</span>
+            <span class="n">data_to_send</span> <span class="o">=</span> <span class="n">data_to_send</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;latin1&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">requester</span><span class="o">.</span><span class="n">write_by_handle_async</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">data_to_send</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_response</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PyBluezBackend.get_handle"><a class="viewcode-back" href="../../../backends/pybluez.html#pymetawear.backends.pybluez.PyBluezBackend.get_handle">[docs]</a>    <span class="k">def</span> <span class="nf">get_handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">characteristic_uuid</span><span class="p">,</span> <span class="n">notify_handle</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get handle for a characteristic UUID.</span>
+
+<span class="sd">        :param uuid.UUID characteristic_uuid: The UUID for the characteristic to look up.</span>
+<span class="sd">        :param bool notify_handle:</span>
+<span class="sd">        :return: The handle for this UUID.</span>
+<span class="sd">        :rtype: int</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">characteristic_uuid</span><span class="p">,</span> <span class="n">string_types</span><span class="p">):</span>
+            <span class="n">characteristic_uuid</span> <span class="o">=</span> <span class="n">characteristic_uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span>
+                <span class="n">characteristic_uuid</span><span class="p">)</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_characteristics_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="n">characteristic_uuid</span><span class="p">,</span> <span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">])[</span><span class="nb">int</span><span class="p">(</span><span class="n">notify_handle</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">handle</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PyMetaWearException</span><span class="p">(</span><span class="s2">&quot;Incorrect characteristic.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">handle</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">mbl_mw_command_to_input</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">length</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">bytes</span><span class="p">(</span><span class="nb">bytearray</span><span class="p">([</span><span class="n">command</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">range_</span><span class="p">(</span><span class="n">length</span><span class="p">)]))</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">read_response_to_str</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">create_string_buffer</span><span class="p">(</span><span class="n">bytearray_to_str</span><span class="p">(</span><span class="n">response</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="p">))</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">notify_response_to_str</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+        <span class="n">bs</span> <span class="o">=</span> <span class="n">bytearray_to_str</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">create_string_buffer</span><span class="p">(</span><span class="n">bs</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">bs</span><span class="p">))</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Henrik Blidh.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.4.4',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

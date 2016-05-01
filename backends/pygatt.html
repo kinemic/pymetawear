@@ -1,0 +1,350 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Backend: pygatt &mdash; PyMetaWear 0.4.4 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="PyMetaWear 0.4.4 documentation" href="../index.html"/>
+        <link rel="up" title="&lt;no title&gt;" href="index.html"/>
+        <link rel="next" title="Backend: pybluez" href="pybluez.html"/>
+        <link rel="prev" title="&lt;no title&gt;" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> PyMetaWear
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.4.4
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../discover.html">Discovering MetaWear boards addresses</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../client.html">MetaWear Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../exceptions.html">Exceptions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Backend: <code class="docutils literal"><span class="pre">pygatt</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pymetaweargatttoolbackend">PyMetaWearGATTToolBackend</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pybluez.html">Backend: <code class="docutils literal"><span class="pre">pybluez</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/index.html">MetaWear modules</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">PyMetaWear</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="index.html">&lt;no title&gt;</a> &raquo;</li>
+      
+    <li>Backend: <code class="docutils literal"><span class="pre">pygatt</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/backends/pygatt.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="backend-pygatt">
+<span id="id1"></span><h1>Backend: <code class="xref py py-mod docutils literal"><span class="pre">pygatt</span></code><a class="headerlink" href="#backend-pygatt" title="Permalink to this headline">¶</a></h1>
+<p>PyMetaWear can use <code class="docutils literal"><span class="pre">pygatt</span></code> as BLE communication backend. This package
+uses <a class="reference external" href="https://pexpect.readthedocs.org/en/stable/">pexpect</a> to control
+the <code class="docutils literal"><span class="pre">gatttool</span></code> (part of BlueZ) command-line utility&#8217;s interactive terminal to
+communicate with Bluetooth LE devices.</p>
+<p>Code can be found on <a class="reference external" href="https://github.com/peplin/pygatt">Github</a>.</p>
+<span class="target" id="module-pymetawear.backends.pygatt"></span><p>Created on 2016-04-02</p>
+<dl class="class">
+<dt id="pymetawear.backends.pygatt.PyGattBackend">
+<em class="property">class </em><code class="descclassname">pymetawear.backends.pygatt.</code><code class="descname">PyGattBackend</code><span class="sig-paren">(</span><em>address</em>, <em>async=True</em>, <em>timeout=None</em>, <em>debug=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pymetawear/backends/pygatt.html#PyGattBackend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pymetawear.backends.pygatt.PyGattBackend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Backend using <a class="reference external" href="https://github.com/peplin/pygatt">pygatt</a>
+for BLE communication.</p>
+<dl class="method">
+<dt id="pymetawear.backends.pygatt.PyGattBackend.disconnect">
+<code class="descname">disconnect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pymetawear/backends/pygatt.html#PyGattBackend.disconnect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pymetawear.backends.pygatt.PyGattBackend.disconnect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disconnect via the GATTTool process and terminate the
+interactive prompt.</p>
+<p>We can use the <cite>stop</cite> method since only one client can be
+connected to one GATTTool backend.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pymetawear.backends.pygatt.PyGattBackend.get_handle">
+<code class="descname">get_handle</code><span class="sig-paren">(</span><em>uuid</em>, <em>notify_handle=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pymetawear/backends/pygatt.html#PyGattBackend.get_handle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pymetawear.backends.pygatt.PyGattBackend.get_handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get handle from characteristic UUID.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>uuid</strong> (<em>uuid.UUID</em>) &#8211; The UUID to find handle to.</li>
+<li><strong>notify_handle</strong> (<em>bool</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Integer handle.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">int</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pymetawear.backends.pygatt.PyGattBackend.read_gatt_char_by_uuid">
+<code class="descname">read_gatt_char_by_uuid</code><span class="sig-paren">(</span><em>characteristic_uuid</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pymetawear/backends/pygatt.html#PyGattBackend.read_gatt_char_by_uuid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pymetawear.backends.pygatt.PyGattBackend.read_gatt_char_by_uuid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the desired data from the MetaWear board using pygatt backend.</p>
+<dl class="docutils">
+<dt>:param pymetawear.mbientlab.metawear.core.GattCharacteristic</dt>
+<dd>characteristic: <code class="xref py py-class docutils literal"><span class="pre">ctypes.POINTER</span></code> to a GattCharacteristic.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The read data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pymetawear.backends.pygatt.PyGattBackend.requester">
+<code class="descname">requester</code><a class="headerlink" href="#pymetawear.backends.pygatt.PyGattBackend.requester" title="Permalink to this definition">¶</a></dt>
+<dd><p>Property handling the backend&#8217;s device instance and its connection.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A connected <code class="docutils literal"><span class="pre">pygatt</span></code> BLE device instance.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal"><span class="pre">pygatt.device.BLEDevice</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pymetawear.backends.pygatt.PyGattBackend.write_gatt_char_by_uuid">
+<code class="descname">write_gatt_char_by_uuid</code><span class="sig-paren">(</span><em>characteristic_uuid</em>, <em>data_to_send</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pymetawear/backends/pygatt.html#PyGattBackend.write_gatt_char_by_uuid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pymetawear.backends.pygatt.PyGattBackend.write_gatt_char_by_uuid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the desired data to the MetaWear board using pygatt backend.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>characteristic_uuid</strong> (<em>uuid.UUID</em>) &#8211; The UUID to the characteristic
+to write to.</li>
+<li><strong>data_to_send</strong> (<em>str</em>) &#8211; Data to send.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="pymetaweargatttoolbackend">
+<h2>PyMetaWearGATTToolBackend<a class="headerlink" href="#pymetaweargatttoolbackend" title="Permalink to this headline">¶</a></h2>
+<p>Some parts of the <code class="docutils literal"><span class="pre">gatttool</span></code> connection client did not work
+properly with the MetaWear boards.
+Right now, these bugs are circumvented by overriding the offending methods.</p>
+<span class="target" id="module-pymetawear.backends.pygatt.gatttool"></span><p>Created by hbldh &lt;<a class="reference external" href="mailto:henrik&#46;blidh&#37;&#52;&#48;nedomkull&#46;com">henrik<span>&#46;</span>blidh<span>&#64;</span>nedomkull<span>&#46;</span>com</a>&gt;
+Created on 2016-04-02</p>
+<dl class="class">
+<dt id="pymetawear.backends.pygatt.gatttool.PyMetaWearGATTToolBLEDevice">
+<em class="property">class </em><code class="descclassname">pymetawear.backends.pygatt.gatttool.</code><code class="descname">PyMetaWearGATTToolBLEDevice</code><span class="sig-paren">(</span><em>address</em>, <em>backend</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pymetawear/backends/pygatt/gatttool.html#PyMetaWearGATTToolBLEDevice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pymetawear.backends.pygatt.gatttool.PyMetaWearGATTToolBLEDevice" title="Permalink to this definition">¶</a></dt>
+<dd><p>PyMetaWear overriding <code class="docutils literal"><span class="pre">get_handle</span></code> method
+to make it Python 3 compliant.</p>
+<dl class="method">
+<dt id="pymetawear.backends.pygatt.gatttool.PyMetaWearGATTToolBLEDevice.get_handle">
+<code class="descname">get_handle</code><span class="sig-paren">(</span><em>char_uuid</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pymetawear/backends/pygatt/gatttool.html#PyMetaWearGATTToolBLEDevice.get_handle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pymetawear.backends.pygatt.gatttool.PyMetaWearGATTToolBLEDevice.get_handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Look up and return the handle for an attribute by its UUID.
+:param char_uuid: The UUID of the characteristic.
+:type uuid: str
+:return: None if the UUID was not found.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pymetawear.backends.pygatt.gatttool.PyMetaWearGATTToolBackend">
+<em class="property">class </em><code class="descclassname">pymetawear.backends.pygatt.gatttool.</code><code class="descname">PyMetaWearGATTToolBackend</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pymetawear/backends/pygatt/gatttool.html#PyMetaWearGATTToolBackend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pymetawear.backends.pygatt.gatttool.PyMetaWearGATTToolBackend" title="Permalink to this definition">¶</a></dt>
+<dd><p>PyMetaWear overriding some method to handle some issues with pygatt.</p>
+<ul class="simple">
+<li>Modification of the GATTToolBackend to handle multiple byte output from notifications.</li>
+<li>Added BlueZ 4.X handling in <code class="docutils literal"><span class="pre">connect</span></code>.</li>
+</ul>
+<p>Will be removed once pull request is drafted and accepted.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="pybluez.html" class="btn btn-neutral float-right" title="Backend: pybluez" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="&lt;no title&gt;" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Henrik Blidh.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.4.4',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

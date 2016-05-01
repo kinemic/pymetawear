@@ -1,0 +1,384 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pymetawear.client &mdash; PyMetaWear 0.4.4 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="PyMetaWear 0.4.4 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> PyMetaWear
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.4.4
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../discover.html">Discovering MetaWear boards addresses</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../client.html">MetaWear Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../exceptions.html">Exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../backends/pygatt.html">Backend: <code class="docutils literal"><span class="pre">pygatt</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../backends/pybluez.html">Backend: <code class="docutils literal"><span class="pre">pybluez</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/index.html">MetaWear modules</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">PyMetaWear</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>pymetawear.client</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pymetawear.client</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">.. moduleauthor:: hbldh &lt;henrik.blidh@nedomkull.com&gt;</span>
+
+<span class="sd">Created on 2016-03-30</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="c1"># from __future__ import unicode_literals</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+
+<span class="kn">from</span> <span class="nn">pymetawear</span> <span class="kn">import</span> <span class="n">libmetawear</span><span class="p">,</span> <span class="n">specs</span>
+<span class="kn">from</span> <span class="nn">pymetawear.exceptions</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">pymetawear</span> <span class="kn">import</span> <span class="n">modules</span>
+<span class="kn">from</span> <span class="nn">pymetawear.backends.pygatt</span> <span class="kn">import</span> <span class="n">PyGattBackend</span>
+<span class="kn">from</span> <span class="nn">pymetawear.backends.pybluez</span> <span class="kn">import</span> <span class="n">PyBluezBackend</span>
+
+
+<div class="viewcode-block" id="discover_devices"><a class="viewcode-back" href="../../discover.html#pymetawear.client.discover_devices">[docs]</a><span class="k">def</span> <span class="nf">discover_devices</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">only_metawear</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Discover Bluetooth Devices nearby.</span>
+
+<span class="sd">    Using hcitool in subprocess, since DiscoveryService in pybluez/gattlib</span>
+<span class="sd">    requires sudo, and hcitool can be allowed to do scan without elevated</span>
+<span class="sd">    permission.</span>
+
+<span class="sd">    .. code-block:: bash</span>
+
+<span class="sd">        $ sudo apt-get install libcap2-bin</span>
+
+<span class="sd">    installs linux capabilities manipulation tools.</span>
+
+<span class="sd">    .. code-block:: bash</span>
+
+<span class="sd">        $ sudo setcap &#39;cap_net_raw,cap_net_admin+eip&#39; `which hcitool`</span>
+
+<span class="sd">    sets the missing capabilities on the executable quite like the setuid bit.</span>
+
+<span class="sd">    **References:**</span>
+
+<span class="sd">    * `StackExchange, hcitool without sudo &lt;https://unix.stackexchange.com/questions/96106/bluetooth-le-scan-as-non-root&gt;`_</span>
+<span class="sd">    * `StackOverflow, hcitool lescan with timeout &lt;https://stackoverflow.com/questions/26874829/hcitool-lescan-will-not-print-in-real-time-to-a-file&gt;`_</span>
+
+<span class="sd">    :param int timeout: Duration of scanning.</span>
+<span class="sd">    :param bool only_metawear: If only addresses with the string &#39;metawear&#39;</span>
+<span class="sd">        in its name should be returned.</span>
+<span class="sd">    :return: List of tuples with `(address, name)`.</span>
+<span class="sd">    :rtype: list</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s2">&quot;hcitool&quot;</span><span class="p">,</span> <span class="s2">&quot;lescan&quot;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+                         <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">pid</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">)</span>
+    <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">err</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">err</span> <span class="o">==</span> <span class="n">b</span><span class="s1">&#39;Set scan parameters failed: Operation not permitted</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PyMetaWearException</span><span class="p">(</span><span class="s2">&quot;Missing capabilites for hcitool!&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">err</span> <span class="o">==</span> <span class="n">b</span><span class="s1">&#39;Set scan parameters failed: Input/output error</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PyMetaWearException</span><span class="p">(</span><span class="s2">&quot;Could not perform scan.&quot;</span><span class="p">)</span>
+    <span class="n">ble_devices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="nb">tuple</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span>
+                            <span class="nb">filter</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:])]))</span>
+    <span class="k">if</span> <span class="n">only_metawear</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s1">&#39;metawear&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">ble_devices</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ble_devices</span></div>
+
+
+<div class="viewcode-block" id="MetaWearClient"><a class="viewcode-back" href="../../client.html#pymetawear.client.MetaWearClient">[docs]</a><span class="k">class</span> <span class="nc">MetaWearClient</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A MetaWear communication client.</span>
+
+<span class="sd">    This client bridges the gap between the</span>
+<span class="sd">    `MetaWear C++ API &lt;https://github.com/mbientlab/Metawear-CppAPI&gt;`_</span>
+<span class="sd">    and a GATT communication package in Python. It provides Pythonic</span>
+<span class="sd">    interface to using the MetaWear boards, allowing for rapid</span>
+<span class="sd">    development and testing.</span>
+
+<span class="sd">    :param str address: A Bluetooth MAC address to a MetaWear board.</span>
+<span class="sd">    :param str backend: Either ``pygatt`` or ``pybluez``, designating which</span>
+<span class="sd">        BLE communication backend that should be used.</span>
+<span class="sd">    :param float timeout: Timeout for connecting to the MetaWear board. If</span>
+<span class="sd">        ``None`` timeout defaults to the backend default.</span>
+<span class="sd">    :param bool debug: If printout of all sent and received</span>
+<span class="sd">        data should be done.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s1">&#39;pygatt&#39;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_address</span> <span class="o">=</span> <span class="n">address</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span> <span class="o">=</span> <span class="n">debug</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialized</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="k">if</span> <span class="n">backend</span> <span class="o">==</span> <span class="s1">&#39;pygatt&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="n">PyGattBackend</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_address</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">backend</span> <span class="o">==</span> <span class="s1">&#39;pybluez&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="n">PyBluezBackend</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_address</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PyMetaWearException</span><span class="p">(</span><span class="s2">&quot;Unknown backend: {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">backend</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Waiting for MetaWear board to be fully initialized...&quot;</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="ow">not</span> <span class="p">(</span><span class="n">libmetawear</span><span class="o">.</span><span class="n">mbl_mw_metawearboard_is_initialized</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">initialized</span><span class="p">):</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">firmware_version</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">read_gatt_char_by_uuid</span><span class="p">(</span>
+            <span class="n">specs</span><span class="o">.</span><span class="n">DEV_INFO_FIRMWARE_CHAR</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_version</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">read_gatt_char_by_uuid</span><span class="p">(</span>
+            <span class="n">specs</span><span class="o">.</span><span class="n">DEV_INFO_MODEL_CHAR</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+
+        <span class="c1"># Initialize module classes.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accelerometer</span> <span class="o">=</span> <span class="n">modules</span><span class="o">.</span><span class="n">AccelerometerModule</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">,</span>
+            <span class="n">libmetawear</span><span class="o">.</span><span class="n">mbl_mw_metawearboard_lookup_module</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">,</span> <span class="n">modules</span><span class="o">.</span><span class="n">Modules</span><span class="o">.</span><span class="n">MBL_MW_MODULE_ACCELEROMETER</span><span class="p">),</span>
+            <span class="n">debug</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_debug</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gyroscope</span> <span class="o">=</span> <span class="n">modules</span><span class="o">.</span><span class="n">GyroscopeModule</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">,</span>
+            <span class="n">libmetawear</span><span class="o">.</span><span class="n">mbl_mw_metawearboard_lookup_module</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">,</span> <span class="n">modules</span><span class="o">.</span><span class="n">Modules</span><span class="o">.</span><span class="n">MBL_MW_MODULE_GYRO</span><span class="p">),</span>
+            <span class="n">debug</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_debug</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">switch</span> <span class="o">=</span> <span class="n">modules</span><span class="o">.</span><span class="n">SwitchModule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_debug</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">battery</span> <span class="o">=</span> <span class="n">modules</span><span class="o">.</span><span class="n">BatteryModule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_debug</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">haptic</span> <span class="o">=</span> <span class="n">modules</span><span class="o">.</span><span class="n">HapticModule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_debug</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">led</span> <span class="o">=</span> <span class="n">modules</span><span class="o">.</span><span class="n">LEDModule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_debug</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;MetaWearClient, {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_address</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;MetaWearClient, {0}&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_address</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">backend</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The requester object for the backend used.</span>
+
+<span class="sd">        :return: The connected BLE backend.</span>
+<span class="sd">        :rtype: :class:`pymetawear.backend.BLECommunicationBackend`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">board</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">board</span>
+
+<div class="viewcode-block" id="MetaWearClient.disconnect"><a class="viewcode-back" href="../../client.html#pymetawear.client.MetaWearClient.disconnect">[docs]</a>    <span class="k">def</span> <span class="nf">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Disconnects this client from the MetaWear board.&quot;&quot;&quot;</span>
+        <span class="n">libmetawear</span><span class="o">.</span><span class="n">mbl_mw_metawearboard_tear_down</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">)</span>
+        <span class="n">libmetawear</span><span class="o">.</span><span class="n">mbl_mw_metawearboard_free</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="MetaWearClient.get_handle"><a class="viewcode-back" href="../../client.html#pymetawear.client.MetaWearClient.get_handle">[docs]</a>    <span class="k">def</span> <span class="nf">get_handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">,</span> <span class="n">notify_handle</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get handle for a characteristic UUID.</span>
+
+<span class="sd">        :param uuid.UUID uuid: The UUID to get handle of.</span>
+<span class="sd">        :param bool notify_handle:</span>
+<span class="sd">        :return: Integer handle corresponding to the input characteristic UUID.</span>
+<span class="sd">        :rtype: int</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">get_handle</span><span class="p">(</span><span class="n">uuid</span><span class="p">,</span> <span class="n">notify_handle</span><span class="o">=</span><span class="n">notify_handle</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_set_logging_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">enabled</span><span class="p">:</span>
+            <span class="n">libmetawear</span><span class="o">.</span><span class="n">mbl_mw_logging_start</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">libmetawear</span><span class="o">.</span><span class="n">mbl_mw_logging_stop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_download_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_notifies</span><span class="p">):</span>
+        <span class="n">libmetawear</span><span class="o">.</span><span class="n">mbl_mw_logging_download</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">,</span> <span class="n">n_notifies</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MetaWearClient.soft_reset"><a class="viewcode-back" href="../../client.html#pymetawear.client.MetaWearClient.soft_reset">[docs]</a>    <span class="k">def</span> <span class="nf">soft_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Issues a soft reset to the board.&quot;&quot;&quot;</span>
+        <span class="n">libmetawear</span><span class="o">.</span><span class="n">mbl_mw_debug_reset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Henrik Blidh.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.4.4',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

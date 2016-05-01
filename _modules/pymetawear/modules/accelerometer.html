@@ -1,0 +1,416 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pymetawear.modules.accelerometer &mdash; PyMetaWear 0.4.4 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="PyMetaWear 0.4.4 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> PyMetaWear
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.4.4
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../discover.html">Discovering MetaWear boards addresses</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../client.html">MetaWear Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../exceptions.html">Exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../backends/pygatt.html">Backend: <code class="docutils literal"><span class="pre">pygatt</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../backends/pybluez.html">Backend: <code class="docutils literal"><span class="pre">pybluez</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/index.html">MetaWear modules</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">PyMetaWear</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      
+    <li>pymetawear.modules.accelerometer</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pymetawear.modules.accelerometer</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">.. moduleauthor:: hbldh &lt;henrik.blidh@nedomkull.com&gt;</span>
+
+<span class="sd">Created: 2016-04-14</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">unicode_literals</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
+<span class="kn">from</span> <span class="nn">ctypes</span> <span class="kn">import</span> <span class="n">c_float</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">POINTER</span>
+
+<span class="kn">from</span> <span class="nn">pymetawear</span> <span class="kn">import</span> <span class="n">libmetawear</span>
+<span class="kn">from</span> <span class="nn">pymetawear.exceptions</span> <span class="kn">import</span> <span class="n">PyMetaWearException</span>
+<span class="kn">from</span> <span class="nn">pymetawear.mbientlab.metawear</span> <span class="kn">import</span> <span class="n">sensor</span>
+<span class="kn">from</span> <span class="nn">pymetawear.mbientlab.metawear.core</span> <span class="kn">import</span> <span class="n">DataTypeId</span><span class="p">,</span> <span class="n">CartesianFloat</span>
+<span class="kn">from</span> <span class="nn">pymetawear.modules.base</span> <span class="kn">import</span> <span class="n">PyMetaWearModule</span>
+
+
+<div class="viewcode-block" id="AccelerometerModule"><a class="viewcode-back" href="../../../modules/accelerometer.html#pymetawear.modules.accelerometer.AccelerometerModule">[docs]</a><span class="k">class</span> <span class="nc">AccelerometerModule</span><span class="p">(</span><span class="n">PyMetaWearModule</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;MetaWear accelerometer module implementation.</span>
+
+<span class="sd">    :param ctypes.c_long board: The MetaWear board pointer value.</span>
+<span class="sd">    :param int module_id: The module id of this accelerometer</span>
+<span class="sd">        component, obtained from ``libmetawear``.</span>
+<span class="sd">    :param bool debug: If ``True``, module prints out debug information.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">board</span><span class="p">,</span> <span class="n">module_id</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AccelerometerModule</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">board</span><span class="p">,</span> <span class="n">debug</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">module_id</span> <span class="o">=</span> <span class="n">module_id</span>
+
+        <span class="n">acc_sensors</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">sensor</span><span class="o">.</span><span class="n">AccelerometerBmi160</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="o">.</span><span class="n">AccelerometerBma255</span><span class="p">,</span>
+            <span class="n">sensor</span><span class="o">.</span><span class="n">AccelerometerMma8452q</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">acc_sensors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="s1">&#39;MODULE_TYPE&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">module_id</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">acc_class</span> <span class="o">=</span> <span class="n">a</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">acc_class</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c1"># Parse possible output data rates for this accelerometer.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">odr</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+                <span class="s1">&#39;^ODR_([0-9]+)\_*([0-9]*)HZ&#39;</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">groups</span><span class="p">()):</span>
+                            <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">acc_class</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span>
+                <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;ODR&#39;</span><span class="p">),</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">acc_class</span><span class="p">))}</span>
+
+            <span class="c1"># Parse possible output data ranges for this accelerometer.</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;FSR&#39;</span><span class="p">),</span>
+                               <span class="nb">vars</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">acc_class</span><span class="p">))))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">acc_class</span> <span class="o">=</span> <span class="n">sensor</span><span class="o">.</span><span class="n">AccelerometerBosch</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">acc_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acc_class</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fsr</span> <span class="o">=</span> <span class="p">{</span><span class="nb">float</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;^FSR_([0-9]+)G&#39;</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">]):</span>
+                            <span class="nb">getattr</span><span class="p">(</span><span class="n">acc_class</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span>
+                        <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;FSR&#39;</span><span class="p">),</span> <span class="nb">vars</span><span class="p">(</span><span class="n">acc_class</span><span class="p">))}</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;{0} {1}: Data rates (Hz): {2}, Data ranges (g): {3}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sensor_name</span><span class="p">,</span>
+            <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">odr</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
+                                      <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)))],</span>
+            <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fsr</span><span class="o">.</span><span class="n">keys</span><span class="p">())])</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">module_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;Accelerometer&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">sensor_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">acc_class</span><span class="o">.</span><span class="n">__name__</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;Accelerometer&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">data_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_signal_preprocess</span><span class="p">(</span>
+            <span class="n">libmetawear</span><span class="o">.</span><span class="n">mbl_mw_acc_get_acceleration_data_signal</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_odr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">sorted_ord_keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">odr</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+        <span class="n">diffs</span> <span class="o">=</span> <span class="p">[</span><span class="nb">abs</span><span class="p">(</span><span class="n">value</span> <span class="o">-</span> <span class="nb">float</span><span class="p">(</span><span class="n">k</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">sorted_ord_keys</span><span class="p">]</span>
+        <span class="n">min_diffs</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">diffs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">min_diffs</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Requested ODR ({0}) was not part of &quot;</span>
+                             <span class="s2">&quot;possible values: {1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">value</span><span class="p">,</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">sorted_ord_keys</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_fsr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">sorted_ord_keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fsr</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+        <span class="n">diffs</span> <span class="o">=</span> <span class="p">[</span><span class="nb">abs</span><span class="p">(</span><span class="n">value</span> <span class="o">-</span> <span class="nb">float</span><span class="p">(</span><span class="n">k</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">sorted_ord_keys</span><span class="p">]</span>
+        <span class="n">min_diffs</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">diffs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">min_diffs</span> <span class="o">&gt;</span> <span class="mf">0.1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Requested FSR ({0}) was not part of &quot;</span>
+                             <span class="s2">&quot;possible values: {1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">value</span><span class="p">,</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fsr</span><span class="o">.</span><span class="n">keys</span><span class="p">())]))</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_current_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">get_possible_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;data_rate&#39;</span><span class="p">:</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">odr</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)))],</span>
+            <span class="s1">&#39;data_range&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fsr</span><span class="o">.</span><span class="n">keys</span><span class="p">())]</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="AccelerometerModule.set_settings"><a class="viewcode-back" href="../../../modules/accelerometer.html#pymetawear.modules.accelerometer.AccelerometerModule.set_settings">[docs]</a>    <span class="k">def</span> <span class="nf">set_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_rate</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">data_range</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set accelerometer settings.</span>
+
+<span class="sd">         Can be called with two or only one setting:</span>
+
+<span class="sd">         .. code-block:: python</span>
+
+<span class="sd">            mwclient.set_accelerometer_settings(data_rate=200.0, data_range=8.0)</span>
+
+<span class="sd">        will give the same result as</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            mwclient.set_accelerometer_settings(data_rate=200.0)</span>
+<span class="sd">            mwclient.set_accelerometer_settings(data_range=8.0)</span>
+
+<span class="sd">        albeit that the latter example makes two writes to the board.</span>
+
+<span class="sd">        Call :meth:`~get_possible_settings` to see which values</span>
+<span class="sd">        that can be set for this sensor.</span>
+
+<span class="sd">        :param float data_rate: The frequency of accelerometer updates in Hz.</span>
+<span class="sd">        :param float data_range: The measurement range in the unit ``g``.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">data_rate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">odr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_odr</span><span class="p">(</span><span class="n">data_rate</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Setting Accelerometer ODR to {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">odr</span><span class="p">))</span>
+            <span class="n">libmetawear</span><span class="o">.</span><span class="n">mbl_mw_acc_set_odr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">,</span> <span class="n">c_float</span><span class="p">(</span><span class="n">odr</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">data_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">fsr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_fsr</span><span class="p">(</span><span class="n">data_range</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Setting Accelerometer FSR to {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fsr</span><span class="p">))</span>
+            <span class="n">libmetawear</span><span class="o">.</span><span class="n">mbl_mw_acc_set_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">,</span> <span class="n">c_float</span><span class="p">(</span><span class="n">fsr</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">data_rate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">data_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="n">libmetawear</span><span class="o">.</span><span class="n">mbl_mw_acc_write_acceleration_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AccelerometerModule.notifications"><a class="viewcode-back" href="../../../modules/accelerometer.html#pymetawear.modules.accelerometer.AccelerometerModule.notifications">[docs]</a>    <span class="k">def</span> <span class="nf">notifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Subscribe or unsubscribe to accelerometer notifications.</span>
+
+<span class="sd">        Convenience method for handling accelerometer usage.</span>
+
+<span class="sd">        Example:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            def handle_acc_notification(data)</span>
+<span class="sd">                # Handle a (x,y,z) accelerometer tuple.</span>
+<span class="sd">                print(&quot;X: {0}, Y: {1}, Z: {2}&quot;.format(*data))</span>
+
+<span class="sd">            mwclient.accelerometer.notifications(handle_acc_notification)</span>
+
+<span class="sd">        :param callable callback: Accelerometer notification callback function.</span>
+<span class="sd">            If `None`, unsubscription to accelerometer notifications is registered.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">AccelerometerModule</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">notifications</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">toggle_sampling</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">AccelerometerModule</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">notifications</span><span class="p">(</span>
+                <span class="n">sensor_data</span><span class="p">(</span><span class="n">callback</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">toggle_sampling</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AccelerometerModule.start"><a class="viewcode-back" href="../../../modules/accelerometer.html#pymetawear.modules.accelerometer.AccelerometerModule.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Switches the accelerometer to active mode.&quot;&quot;&quot;</span>
+        <span class="n">libmetawear</span><span class="o">.</span><span class="n">mbl_mw_acc_start</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AccelerometerModule.stop"><a class="viewcode-back" href="../../../modules/accelerometer.html#pymetawear.modules.accelerometer.AccelerometerModule.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Switches the accelerometer to standby mode.&quot;&quot;&quot;</span>
+        <span class="n">libmetawear</span><span class="o">.</span><span class="n">mbl_mw_acc_stop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AccelerometerModule.toggle_sampling"><a class="viewcode-back" href="../../../modules/accelerometer.html#pymetawear.modules.accelerometer.AccelerometerModule.toggle_sampling">[docs]</a>    <span class="k">def</span> <span class="nf">toggle_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Enables or disables accelerometer sampling.</span>
+
+<span class="sd">        :param bool enabled: Desired state of the accelerometer.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">enabled</span><span class="p">:</span>
+            <span class="n">libmetawear</span><span class="o">.</span><span class="n">mbl_mw_acc_enable_acceleration_sampling</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">libmetawear</span><span class="o">.</span><span class="n">mbl_mw_acc_disable_acceleration_sampling</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">board</span><span class="p">)</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">sensor_data</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">contents</span><span class="o">.</span><span class="n">type_id</span> <span class="o">==</span> <span class="n">DataTypeId</span><span class="o">.</span><span class="n">CARTESIAN_FLOAT</span><span class="p">:</span>
+            <span class="n">data_ptr</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">contents</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">POINTER</span><span class="p">(</span><span class="n">CartesianFloat</span><span class="p">))</span>
+            <span class="n">func</span><span class="p">((</span><span class="n">data_ptr</span><span class="o">.</span><span class="n">contents</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+                  <span class="n">data_ptr</span><span class="o">.</span><span class="n">contents</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                  <span class="n">data_ptr</span><span class="o">.</span><span class="n">contents</span><span class="o">.</span><span class="n">z</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PyMetaWearException</span><span class="p">(</span><span class="s1">&#39;Incorrect data type id: {0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">contents</span><span class="o">.</span><span class="n">type_id</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">wrapper</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Henrik Blidh.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.4.4',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

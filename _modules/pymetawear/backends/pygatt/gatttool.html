@@ -1,0 +1,295 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pymetawear.backends.pygatt.gatttool &mdash; PyMetaWear 0.4.4 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="PyMetaWear 0.4.4 documentation" href="../../../../index.html"/>
+        <link rel="up" title="pymetawear.backends.pygatt" href="../pygatt.html"/> 
+
+  
+  <script src="../../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> PyMetaWear
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.4.4
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../discover.html">Discovering MetaWear boards addresses</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../client.html">MetaWear Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../exceptions.html">Exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../backends/pygatt.html">Backend: <code class="docutils literal"><span class="pre">pygatt</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../backends/pybluez.html">Backend: <code class="docutils literal"><span class="pre">pybluez</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/index.html">MetaWear modules</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../../index.html">PyMetaWear</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      
+          <li><a href="../pygatt.html">pymetawear.backends.pygatt</a> &raquo;</li>
+      
+    <li>pymetawear.backends.pygatt.gatttool</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pymetawear.backends.pygatt.gatttool</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">Created by hbldh &lt;henrik.blidh@nedomkull.com&gt;</span>
+<span class="sd">Created on 2016-04-02</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="c1">#from __future__ import unicode_literals</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="n">UUID</span>
+
+<span class="kn">import</span> <span class="nn">pygatt</span>
+<span class="kn">from</span> <span class="nn">pygatt</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">pygatt.backends.gatttool.gatttool</span> <span class="kn">import</span> <span class="n">DEFAULT_CONNECT_TIMEOUT_S</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> \
+    <span class="n">NotConnectedError</span><span class="p">,</span> <span class="n">NotificationTimeout</span><span class="p">,</span> <span class="n">GATTToolBLEDevice</span><span class="p">,</span> <span class="n">pexpect</span>
+
+<span class="kn">from</span> <span class="nn">pymetawear.utils</span> <span class="kn">import</span> <span class="n">string_types</span>
+
+
+<div class="viewcode-block" id="PyMetaWearGATTToolBLEDevice"><a class="viewcode-back" href="../../../../backends/pygatt.html#pymetawear.backends.pygatt.gatttool.PyMetaWearGATTToolBLEDevice">[docs]</a><span class="k">class</span> <span class="nc">PyMetaWearGATTToolBLEDevice</span><span class="p">(</span><span class="n">GATTToolBLEDevice</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;PyMetaWear overriding ``get_handle`` method</span>
+<span class="sd">    to make it Python 3 compliant.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PyMetaWearGATTToolBLEDevice.get_handle"><a class="viewcode-back" href="../../../../backends/pygatt.html#pymetawear.backends.pygatt.gatttool.PyMetaWearGATTToolBLEDevice.get_handle">[docs]</a>    <span class="k">def</span> <span class="nf">get_handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">char_uuid</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Look up and return the handle for an attribute by its UUID.</span>
+<span class="sd">        :param char_uuid: The UUID of the characteristic.</span>
+<span class="sd">        :type uuid: str</span>
+<span class="sd">        :return: None if the UUID was not found.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">char_uuid</span><span class="p">,</span> <span class="n">string_types</span><span class="p">):</span>
+            <span class="n">char_uuid</span> <span class="o">=</span> <span class="n">UUID</span><span class="p">(</span><span class="n">char_uuid</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Looking up handle for characteristic </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">char_uuid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">char_uuid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_characteristics</span><span class="p">:</span>
+            <span class="c1"># TODO need to expose discovering characterstics via BLEDevice</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_characteristics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discover_characteristics</span><span class="p">()</span>
+
+        <span class="n">characteristic</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_characteristics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">char_uuid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">characteristic</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;No characteristic found matching </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">char_uuid</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">BLEError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="c1"># TODO support filtering by descriptor UUID, or maybe return the whole</span>
+        <span class="c1"># Characteristic object</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">characteristic</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">characteristic</span><span class="o">.</span><span class="n">handle</span></div></div>
+
+
+<div class="viewcode-block" id="PyMetaWearGATTToolBackend"><a class="viewcode-back" href="../../../../backends/pygatt.html#pymetawear.backends.pygatt.gatttool.PyMetaWearGATTToolBackend">[docs]</a><span class="k">class</span> <span class="nc">PyMetaWearGATTToolBackend</span><span class="p">(</span><span class="n">pygatt</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">GATTToolBackend</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;PyMetaWear overriding some method to handle some issues with pygatt.</span>
+
+<span class="sd">    * Modification of the GATTToolBackend to handle multiple byte output from notifications.</span>
+<span class="sd">    * Added BlueZ 4.X handling in ``connect``.</span>
+
+<span class="sd">    Will be removed once pull request is drafted and accepted.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_notification_regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;=\s(0x[0-9a-fA-F]{4})\svalue:\s(.*)$&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PyMetaWearGATTToolBackend</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_CONNECT_TIMEOUT_S</span><span class="p">,</span>
+                <span class="n">address_type</span><span class="o">=</span><span class="s1">&#39;public&#39;</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Connecting with timeout=</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_con</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="s1">&#39;sec-level low&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_address</span> <span class="o">=</span> <span class="n">address</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection_lock</span><span class="p">:</span>
+                <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;connect </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_address</span><span class="p">,</span> <span class="n">address_type</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_con</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_con</span><span class="o">.</span><span class="n">expect</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">b</span><span class="s1">&#39;Connection successful.*\[LE\]&gt;&#39;</span><span class="p">,</span>
+                     <span class="bp">self</span><span class="o">.</span><span class="n">_address</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">b</span><span class="s1">&#39;\[CON\]\[&#39;</span><span class="p">,</span> <span class="n">b</span><span class="s1">&#39;\]\[LE\]&#39;</span><span class="p">])],</span>
+                    <span class="n">timeout</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">pexpect</span><span class="o">.</span><span class="n">TIMEOUT</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Timed out connecting to </span><span class="si">%s</span><span class="s2"> after </span><span class="si">%s</span><span class="s2"> seconds.&quot;</span>
+                       <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_address</span><span class="p">,</span> <span class="n">timeout</span><span class="p">))</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">NotConnectedError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connected_device</span> <span class="o">=</span> <span class="n">PyMetaWearGATTToolBLEDevice</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connected_device</span>
+
+    <span class="k">def</span> <span class="nf">_handle_notification_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="n">hex_handle</span><span class="p">,</span> <span class="n">hex_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_notification_regex</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hex_handle</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">hex_values</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connected_device</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_connected_device</span><span class="o">.</span><span class="n">receive_notification</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Henrik Blidh.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../../',
+            VERSION:'0.4.4',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
