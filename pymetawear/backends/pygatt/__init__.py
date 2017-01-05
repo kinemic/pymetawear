@@ -60,7 +60,9 @@ class PyGattBackend(BLECommunicationBackend):
             self._backend.start(reset_on_start=False)
             log.info("Connecting GATTTool...")
             self._requester = self._backend.connect(
-                self._address, timeout=self._timeout, address_type=BLEAddressType.random)
+                self._address, timeout=self._timeout,
+                address_type=BLEAddressType.random,
+                auto_reconnect=True)
 
             if not self.requester._connected:
                 raise PyMetaWearConnectionTimeout(
