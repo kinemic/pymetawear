@@ -16,17 +16,24 @@ import uuid
 import logging
 
 from ctypes import create_string_buffer
+import pygatt
 from pygatt import BLEAddressType
 from pygatt.backends.gatttool import gatttool
+from pygatt.exceptions import NotConnectedError
 
 from pymetawear.exceptions import PyMetaWearException, PyMetaWearConnectionTimeout
 from pymetawear.compat import range_
 from pymetawear.backends import BLECommunicationBackend
 
+from enum import Enum
+
 __all__ = ["PyGattBackend"]
 
 log = logging.getLogger(__name__)
 
+class BackendType(Enum):
+    bgapi = 1
+    gatttool = 2
 
 class PyGattBackend(BLECommunicationBackend):
     """
@@ -37,6 +44,7 @@ class PyGattBackend(BLECommunicationBackend):
     def __init__(self, address, interface=None, async=True, timeout=None, debug=False):
 
         self._backend = None
+        self._backendtype = None
         if debug:
             log.setLevel(logging.DEBUG)
 
@@ -54,20 +62,35 @@ class PyGattBackend(BLECommunicationBackend):
 
         """
         if self._requester is None:
+            try:
+                log.info("Trying to use BGAPI Backend")
+                self._backend = pygatt.BGAPIBackend()
+                self._backend.start()
+                self._backendtype = BackendType.bgapi
+            except NotConnectedError:
+                log.info("Creating new GATTToolBackend and starting GATTtool process...")
+                self._backend = gatttool.GATTToolBackend(hci_device=self._interface)
+                self._backend.start(reset_on_start=False)
+                self._backendtype = BackendType.gatttool
 
-            log.info("Creating new GATTToolBackend and starting GATTtool process...")
-            self._backend = gatttool.GATTToolBackend(hci_device=self._interface)
-            self._backend.start(reset_on_start=False)
-            log.info("Connecting GATTTool...")
-            self._requester = self._backend.connect(
-                self._address, timeout=self._timeout,
-                address_type=BLEAddressType.random,
-                auto_reconnect=True)
+            #TODO: unify
+            if self._backendtype == BackendType.bgapi:
+                log.info("Connecting with BGAPI")
+                self._requester = self._backend.connect(
+                    self._address, timeout=self._timeout,
+                    address_type=BLEAddressType.random)
 
-            if not self.requester._connected:
-                raise PyMetaWearConnectionTimeout(
-                    "Could not establish a connection to {0}.".format(
-                        self._address))
+            else:
+                log.info("Connecting GATTTool...")
+                self._requester = self._backend.connect(
+                    self._address, timeout=self._timeout,
+                    address_type=BLEAddressType.random,
+                    auto_reconnect=True)
+
+                if not self.requester._connected:
+                    raise PyMetaWearConnectionTimeout(
+                        "Could not establish a connection to {0}.".format(
+                            self._address))
 
         return self._requester
 
