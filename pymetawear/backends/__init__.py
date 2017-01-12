@@ -36,11 +36,13 @@ class BLECommunicationBackend(object):
         self._async = async
         self._debug = debug
         self._timeout = timeout
+        self._board = None
+        self._assigning = False
 
         if debug:
             log.setLevel(logging.DEBUG)
 
-        self._initialization_status = -1
+        self._initialization_status = None
 
         self._requester = None
 
@@ -67,12 +69,18 @@ class BLECommunicationBackend(object):
         self.subscribe(METAWEAR_SERVICE_NOTIFY_CHAR[1],
                        self.handle_notify_char_output)
 
-        # Now create a libmetawear board object and initialize it.
-        self.board = libmetawear.mbl_mw_metawearboard_create(
-            byref(self._btle_connection))
+        while self._board is None:  # board will be assigned by the subscribe call
+            time.sleep(0.1)
 
         _response_time = os.environ.get('PYMETAWEAR_RESPONSE_TIME', 300)
         libmetawear.mbl_mw_metawearboard_set_time_for_response(self.board, int(_response_time))
+
+        log.debug("Setting Connection Parameters")
+        libmetawear.mbl_mw_settings_set_connection_parameters(self.board,
+                                                              7.5, # min connection interval
+                                                              7.5, # max connection interval
+                                                              0, # latency
+                                                              6000) # timeout
 
         libmetawear.mbl_mw_metawearboard_initialize(
             self.board, self.callbacks.get('initialization')[1])
@@ -88,7 +96,7 @@ class BLECommunicationBackend(object):
 
     @property
     def initialized(self):
-        return self._initialization_status >= 0
+        return self._initialization_status is not None
 
     @property
     def requester(self):
@@ -100,6 +108,26 @@ class BLECommunicationBackend(object):
 
         """
         raise NotImplementedError("Use backend-specific classes instead!")
+
+    @property
+    def board(self):
+        """
+        The mbientlab board object to be created after a connection was
+        established
+
+        :return: The created board object
+        """
+        if self._board is None:
+            if not self._assigning:
+                self._assigning = True
+                # Now create a libmetawear board object and initialize it.
+                self._board = libmetawear.mbl_mw_metawearboard_create(
+                    byref(self._btle_connection))
+                self._assigning = False
+            else:
+                while self._board is None:
+                    time.sleep(0.1)
+        return self._board
 
     def disconnect(self):
         """Handle any required disconnecting in the backend,
