@@ -148,12 +148,16 @@ class MetaWearClient(object):
         if self._debug:
             log.debug("Waiting for MetaWear board to be fully initialized...")
 
-        while (not self.backend.initialized) and (not
-                libmetawear.mbl_mw_metawearboard_is_initialized(self.board)):
+        while (not self.backend.initialized):
             self.backend.sleep(0.1)
 
+        if not libmetawear.mbl_mw_metawearboard_is_initialized(self.board):
+            raise PyMetaWearException("libmetawear initialization status {0}".format(
+            self.backend._initialization_status
+        ))
+
         # Check if initialization has been completed successfully.
-        if self.backend.initialized != Status.OK:
+        if self.backend._initialization_status != Status.OK:
             if self.backend._initialization_status == Status.ERROR_TIMEOUT:
                 raise PyMetaWearConnectionTimeout("libmetawear initialization status 16: Timeout")
             else:
