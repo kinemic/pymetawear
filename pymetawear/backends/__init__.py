@@ -69,8 +69,7 @@ class BLECommunicationBackend(object):
         self.subscribe(METAWEAR_SERVICE_NOTIFY_CHAR[1],
                        self.handle_notify_char_output)
 
-        while self._board is None:  # board will be assigned by the subscribe call
-            time.sleep(0.1)
+        self.board  # force board assignment
 
         _response_time = os.environ.get('PYMETAWEAR_RESPONSE_TIME', 300)
         libmetawear.mbl_mw_metawearboard_set_time_for_response(self.board, int(_response_time))
