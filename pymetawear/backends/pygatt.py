@@ -91,7 +91,8 @@ class PyGattBackend(BLECommunicationBackend):
             self._address))
         self._requester = self._backend.connect(
             self._address, timeout=self._timeout,
-            address_type=BLEAddressType.random)
+            address_type=BLEAddressType.random,
+            auto_reconnect=True)
 
         super(PyGattBackend, self).connect()
 
