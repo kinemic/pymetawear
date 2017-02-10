@@ -25,6 +25,7 @@ from .magnetometer import MagnetometerModule
 from .switch import SwitchModule
 from .temperature import TemperatureModule
 from .sensorfusion import SensorFusionModule
+from .gpio import GPIOModule
 
 __all__ = [
     "PyMetaWearModule", "Modules",
@@ -33,5 +34,6 @@ __all__ = [
     "GyroscopeModule", "HapticModule",
     "LEDModule", "MagnetometerModule",
     "SwitchModule", "TemperatureModule",
-    "SensorFusionModule"
+    "SensorFusionModule",
+    "GPIOModule"
 ]

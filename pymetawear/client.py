@@ -90,6 +90,7 @@ class MetaWearClient(object):
         self.haptic = None
         self.led = None
         self.sensorfusion = None
+        self.gpio = None
 
         if connect:
             self.connect()
@@ -216,4 +217,9 @@ class MetaWearClient(object):
             self.board,
             libmetawear.mbl_mw_metawearboard_lookup_module(
                 self.board, modules.Modules.MBL_MW_MODULE_SENSOR_FUSION),
+            debug=self._debug)
+        self.gpio = modules.GPIOModule(
+            self.board,
+            libmetawear.mbl_mw_metawearboard_lookup_module(
+                self.board, modules.Modules.MBL_MW_MODULE_GPIO),
             debug=self._debug)
