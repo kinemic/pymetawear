@@ -54,3 +54,9 @@ class GPIOModule(PyMetaWearModule):
     @property
     def module_name(self):
         return "GPIO"
+
+    def set_digital_output(self, pin):
+        libmetawear.mbl_mw_gpio_set_digital_output(self.board, pin)
+
+    def clear_digital_output(self, pin):
+        libmetawear.mbl_mw_gpio_clear_digital_output(self.board, pin)
