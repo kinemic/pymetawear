@@ -15,11 +15,12 @@ from __future__ import absolute_import
 import warnings
 import logging
 from functools import wraps
-from ctypes import cast, POINTER, c_float, c_uint
+from ctypes import cast, POINTER, c_float, c_uint, c_void_p, byref
 
 from pymetawear import libmetawear
 from pymetawear.exceptions import PyMetaWearException
 from pymetawear.mbientlab.metawear.core import DataTypeId, Fn_DataPtr
+from pymetawear.mbientlab.metawear.sensor import Gpio
 from pymetawear.modules.base import PyMetaWearModule, Modules
 
 
@@ -66,6 +67,10 @@ class GPIOModule(PyMetaWearModule):
     def get_digital_input_data_signal(self, pin):
         return libmetawear.mbl_mw_gpio_get_digital_input_data_signal(self.board, pin)
 
+    def get_analog_input_data_signal(self, pin, read_ref=True):
+        mode = Gpio.ANALOG_READ_MODE_ABS_REF if read_ref else Gpio.ANALOG_READ_MODE_ADC
+        return libmetawear.mbl_mw_gpio_get_analog_input_data_signal(self.board, pin, mode)
+
     def subscribe(self, data_signal, callback):
         callback_ptr = Fn_DataPtr(sensor_data(callback))
         self.callback_dict[data_signal] = callback_ptr
@@ -77,6 +82,19 @@ class GPIOModule(PyMetaWearModule):
 
     def read(self, data_signal):
         libmetawear.mbl_mw_datasignal_read(data_signal)
+
+    # Not sure if this is working. Pull-up/-down does not have any effect, use .set_pull_mode(..) instead.
+    def read_with_parameters(self, data_signal, pullup_pin=Gpio.UNUSED_PIN, pulldown_pin=Gpio.UNUSED_PIN, virtual_pin=Gpio.UNUSED_PIN, delay=0):
+        parameters = Gpio.AnalogReadParameters(pullup_pin, pulldown_pin, virtual_pin, delay)
+        libmetawear.mbl_mw_datasignal_read_with_parameters(data_signal, byref(parameters))
+
+    def set_pull_mode(self, pin, mode):
+        pull_mode = Gpio.PULL_MODE_NONE
+        if mode == 'pull_up':
+            pull_mode = Gpio.PULL_MODE_UP
+        if mode == 'pull_down':
+            pull_mode = Gpio.PULL_MODE_DOWN
+        libmetawear.mbl_mw_gpio_set_pull_mode(self.board, pin, pull_mode)
 
 
 def sensor_data(func):
