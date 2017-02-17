@@ -90,6 +90,8 @@ class MetaWearClient(object):
         self.haptic = None
         self.led = None
         self.sensorfusion = None
+        self.event = None
+        self.timer = None
 
         if connect:
             self.connect()
@@ -216,4 +218,14 @@ class MetaWearClient(object):
             self.board,
             libmetawear.mbl_mw_metawearboard_lookup_module(
                 self.board, modules.Modules.MBL_MW_MODULE_SENSOR_FUSION),
+            debug=self._debug)
+        self.event = modules.EventModule(
+            self.board,
+            libmetawear.mbl_mw_metawearboard_lookup_module(
+                self.board, modules.Modules.MBL_MW_MODULE_EVENT),
+            debug=self._debug)
+        self.timer = modules.TimerModule(
+            self.board,
+            libmetawear.mbl_mw_metawearboard_lookup_module(
+                self.board, modules.Modules.MBL_MW_MODULE_TIMER),
             debug=self._debug)
