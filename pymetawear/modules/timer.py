@@ -62,6 +62,12 @@ class TimerModule(PyMetaWearModule):
     def create_timer_indefinite(self, period, delay, callback):
         libmetawear.mbl_mw_timer_create_indefinite(self.board, period, delay, Fn_VoidPtr(callback))
 
+    def create_timer_indefinitely_c_callback(self, period, delay, callback):
+        libmetawear.mbl_mw_timer_create_indefinite(self.board, period, delay, callback)
+        
+    def create_timer_c_callback(self, period, repetitions, delay, callback):
+        libmetawear.mbl_mw_timer_create(self.board, period, repetitions, delay, callback)
+
     def remove(self, timer):
         libmetawear.mbl_mw_timer_remove(timer)
 
